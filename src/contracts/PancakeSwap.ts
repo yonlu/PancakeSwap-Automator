@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import retry from "async-retry";
 import { BigNumber, Contract, utils } from "ethers";
 
@@ -7,33 +6,13 @@ import pcsAbi from "../utils/abi.json";
 import factoryAbi from "../utils/factoryAbi.json";
 import routerAbi from "../utils/routerAbi.json";
 
-interface IPancakeSwap {
-  routerAddress: string;
-  factoryAddress: string;
-}
-
 class PancakeSwap {
-  factory: Contract;
-  router: Contract;
+  factory = new Contract(process.env.FACTORY, factoryAbi, account);
+  router = new Contract(process.env.ROUTER, routerAbi, account);
 
   static pcsAbi = new utils.Interface(pcsAbi);
-
-  static wbnbAddress = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
-  static gasPrice = utils.parseUnits("5", "gwei");
+  static gasPrice = utils.parseUnits("10", "gwei");
   static gasLimit = 350000;
-
-  constructor({ factoryAddress, routerAddress }: IPancakeSwap) {
-    this.setFactory(factoryAddress);
-    this.setRouter(routerAddress);
-  }
-
-  public setFactory = (factoryAddress: string): void => {
-    this.factory = new Contract(factoryAddress, factoryAbi, account);
-  };
-
-  public setRouter = (routerAddress: string): void => {
-    this.router = new Contract(routerAddress, routerAbi, account);
-  };
 
   public snipe = async (tokenAddress: string): Promise<void> => {
     const EXPECTED_PONG_BACK = 30000;
@@ -124,7 +103,7 @@ class PancakeSwap {
         const buyConfirmation =
           await this.router.swapExactETHForTokensSupportingFeeOnTransferTokens(
             amountOutMin,
-            [PancakeSwap.wbnbAddress, tokenAddress],
+            [process.env.WBNB, tokenAddress],
             process.env.RECIPIENT,
             Date.now() + 1000 * 60 * 5, // 5 minutes
             {
@@ -186,7 +165,7 @@ class PancakeSwap {
 
     const amounts = await this.router.getAmountsOut(testSellAmount, [
       tokenAddress,
-      PancakeSwap.wbnbAddress,
+      process.env.WBNB,
     ]);
     const amountOutMin = amounts[1].sub(amounts[1].div(12));
 
@@ -196,11 +175,11 @@ class PancakeSwap {
           await this.router.swapExactTokensForETHSupportingFeeOnTransferTokens(
             testSellAmount,
             amountOutMin,
-            [tokenAddress, PancakeSwap.wbnbAddress],
+            [tokenAddress, process.env.WBNB],
             process.env.RECIPIENT,
             Date.now() + 1000 * 60 * 5, // 5 minutes
             {
-              gasLimit: PancakeSwap.gasLimit,
+              gasLimit: 750000,
               gasPrice: PancakeSwap.gasPrice,
             }
           );

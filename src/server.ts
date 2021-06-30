@@ -2,17 +2,14 @@ import * as dotenv from "dotenv";
 import { Wallet } from "ethers";
 
 import PancakeSwap from "./contracts/PancakeSwap";
-import { setProvider } from "./services/provider";
+import { setDefaultProvider, setWebSocketProvider } from "./services/provider";
 
 dotenv.config();
 
 const wallet = Wallet.fromMnemonic(process.env.MNEMONIC);
-export const provider = setProvider(process.env.WSS_PROVIDER);
+export const provider = setWebSocketProvider(process.env.WSS_PROVIDER);
 export const account = wallet.connect(provider);
 
-const PancakeSwapDTO = {
-  routerAddress: process.env.ROUTER,
-  factoryAddress: process.env.FACTORY,
-};
+const pancakeSwap = new PancakeSwap();
 
-const pancakeSwap = new PancakeSwap(PancakeSwapDTO);
+pancakeSwap.buyToken("0x7ef95a0fee0dd31b22626fa2e10ee6a223f8a684", "0.001");
